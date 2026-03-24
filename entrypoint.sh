@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Start RunPod base services (SSH, Jupyter) in background
+/start.sh &
+sleep 2
+
 echo "=== NanoCore Pod Entrypoint ==="
 echo "  NANOCORE_CONFIG: $NANOCORE_CONFIG"
 echo "  NANOCORE_PATHS:  $NANOCORE_PATHS"
@@ -8,9 +12,11 @@ echo "  ASSET_DB_PATH:   $ASSET_DB_PATH"
 
 # Validate nodeservers.json exists
 if [ ! -f "$NANOCORE_CONFIG" ]; then
-    echo "ERROR: nodeservers.json not found at $NANOCORE_CONFIG"
-    echo "Create it on your network volume or set NANOCORE_CONFIG env var."
-    exit 1
+    echo "WARNING: nodeservers.json not found at $NANOCORE_CONFIG"
+    echo "NanoCore will not start. SSH is available — set up manually."
+    echo "Set NANOCORE_CONFIG env var to the path of your nodeservers.json."
+    wait
+    exit 0
 fi
 
 # Register each nodeserver listed in nodeservers.json (idempotent)
@@ -31,6 +37,6 @@ for s in servers:
     fi
 done
 
-# Start NanoCore (NANOCORE_CONFIG is read natively by NanoCore)
+# Start NanoCore as PID 1 (receives signals properly)
 echo "Starting NanoCore..."
 exec nanocore start --paths "$NANOCORE_PATHS"

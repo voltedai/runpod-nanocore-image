@@ -24,4 +24,5 @@ ENV ASSET_API_TOKEN=changeme
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Override CMD to run our entrypoint (which starts /start.sh in background for SSH/Jupyter)
 CMD ["/entrypoint.sh"]
