@@ -22,7 +22,7 @@ if [ ! -f "$NANOCORE_CONFIG" ]; then
     exit 0
 fi
 
-# Register each nodeserver listed in nodeservers.json (idempotent)
+# Register each nodeserver listed in nodeservers.json (skip if venv already exists)
 echo "Registering nodeservers..."
 for server_path in $(python3 -c "
 import json
@@ -31,12 +31,14 @@ with open('$NANOCORE_CONFIG') as f:
 for s in servers:
     print(s['path'])
 "); do
-    if [ -d "$server_path" ]; then
+    if [ ! -d "$server_path" ]; then
+        echo "  WARNING: $server_path does not exist, skipping"
+    elif [ -d "$server_path/venv" ]; then
+        echo "  Already registered: $server_path (venv exists)"
+    else
         echo "  Registering: $server_path"
         cd "$server_path"
         nanocore register
-    else
-        echo "  WARNING: $server_path does not exist, skipping"
     fi
 done
 
