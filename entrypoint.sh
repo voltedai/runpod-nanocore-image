@@ -3,7 +3,10 @@ set -e
 
 # Start RunPod base services (SSH, Jupyter) in background
 /start.sh &
-sleep 2
+sleep 5
+
+# Kill nginx — it steals port 3001 needed by NanoCore asset server
+pkill nginx 2>/dev/null && echo "nginx stopped (port 3001 freed)" || true
 
 echo "=== NanoCore Pod Entrypoint ==="
 echo "  NANOCORE_CONFIG: $NANOCORE_CONFIG"
